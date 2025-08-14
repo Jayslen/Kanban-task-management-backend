@@ -3,7 +3,10 @@
   "compilerOptions": {
     "outDir": "dist",
     "baseUrl": ".",
-    "noEmitOnError": true, 
+    "noEmitOnError": true,
+    "paths": {
+      "@Types/global": ["src/types/global.ts"]
+    }
      },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
