@@ -4,4 +4,5 @@ import { userSchema } from "src/schema/userSchema.js";
 
 
 export type SQLModel = typeof MySqlModel
-export type UserDTO = z.infer<typeof userSchema> 
+export type UserDTO = z.infer<typeof userSchema>
+export type UserParams = { username: string, password: string }
