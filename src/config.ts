@@ -14,6 +14,8 @@ export const DB_CONFIG = {
     connectionLimit: 10
 }
 
+export const { ROUND_SALT = '8' } = process.env
+
 z.config({
     customError: (iss) => {
         if (iss.code === 'too_small' && iss.origin === 'string') {
