@@ -1,7 +1,7 @@
 import { createConnection } from 'mysql2/promise'
 import { DB_CONFIG } from '../config.js'
 import { UserParams, UserRow } from '@Types/global'
-import { UserNotAvailable } from 'src/schema/Errors.js'
+import { UserNotAvailable } from '../schema/Errors.js'
 
 //@ts-ignore
 const db = await createConnection(DB_CONFIG)

@@ -1,7 +1,7 @@
 import z from 'zod'
 import { RowDataPacket } from 'mysql2/promise'
 import { MySqlModel } from "../models/mysqlModel.js";
-import { userSchema } from "src/schema/userSchema.js";
+import { userSchema } from "../schema/userSchema.js";
 
 
 export type SQLModel = typeof MySqlModel
