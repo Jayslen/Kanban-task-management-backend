@@ -12,6 +12,16 @@ export interface UserRow extends RowDataPacket {
     username: string
 }
 
+export interface UserDb extends RowDataPacket {
+    username: string
+    user_id: string
+    password: string
+}
+
+export interface UUIDResponse extends RowDataPacket {
+    uuid: string
+}
+
 export interface ResponseError extends Error {
     statusCode: number
 }

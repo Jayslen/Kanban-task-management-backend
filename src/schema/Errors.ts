@@ -10,7 +10,25 @@ export class UserNotAvailable extends Error implements ResponseError {
     }
 }
 
-const customErrors = [UserNotAvailable]
+export class UserNotFound extends Error implements ResponseError {
+    public statusCode: number
+    constructor(message = "No user exit with the username given") {
+        super(message)
+        this.name = "UserNotFound"
+        this.statusCode = 404
+    }
+}
+
+export class WrongUserPassword extends Error implements ResponseError {
+    public statusCode: number
+    constructor(message = "Password incorrect") {
+        super(message)
+        this.name = "WrongPassword"
+        this.statusCode = 400
+    }
+}
+
+const customErrors = [UserNotFound, UserNotAvailable, WrongUserPassword]
 
 export function throwResponseError(input: { res: Response, error: Error }) {
     const { error, res } = input

@@ -7,9 +7,7 @@ export async function createAuthRoutes(Model: SQLModel): Promise<Router> {
     const router = Router();
 
     router.post('/register', Controller.register)
-
-    router.post('/login', (req: Request, res: Response) => { })
-
+    router.post('/login', Controller.login)
     router.post('/logout', (req: Request, res: Response) => { })
 
     return router;
