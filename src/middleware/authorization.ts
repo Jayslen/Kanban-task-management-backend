@@ -39,6 +39,7 @@ export async function Authorization(
             data: refresh,
             expiresIn: ACCESS_TOKEN_EXP,
         })
+        req.user = refresh
         res.cookie('access_token', newAccessToken, {
             httpOnly: true,
         })
