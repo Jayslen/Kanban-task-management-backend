@@ -28,7 +28,16 @@ export class WrongUserPassword extends Error implements ResponseError {
     }
 }
 
-const customErrors = [UserNotFound, UserNotAvailable, WrongUserPassword]
+export class UnauthorizedUser extends Error implements ResponseError {
+    public statusCode: number
+    constructor(message = "Need to be authentificated") {
+        super(message)
+        this.name = "Unauthorized"
+        this.statusCode = 401
+    }
+}
+
+const customErrors = [UserNotFound, UserNotAvailable, WrongUserPassword, UnauthorizedUser]
 
 export function throwResponseError(input: { res: Response, error: Error }) {
     const { error, res } = input

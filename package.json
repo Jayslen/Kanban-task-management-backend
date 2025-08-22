@@ -16,12 +16,13 @@
     "@tsconfig/node22": "22.0.2",
     "@types/express": "^5.0.3",
     "@types/node": "24.2.1",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/jsonwebtoken": "^9.0.10",
     "tsx": "4.20.4",
     "typescript": "5.9.2"
   },
   "dependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "6.0.0",
     "cookie-parser": "^1.4.7",
     "express": "5.1.0",

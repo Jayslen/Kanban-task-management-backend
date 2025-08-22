@@ -25,3 +25,22 @@ export interface UUIDResponse extends RowDataPacket {
 export interface ResponseError extends Error {
     statusCode: number
 }
+
+export interface Payload {
+    userId: string;
+    username: string;
+    sessionId: string;
+}
+
+export interface VerifyResult {
+    payload: Payload | null;
+    expired: boolean;
+}
+
+declare global {
+    namespace Express {
+        interface Request {
+            user?: any
+        }
+    }
+}

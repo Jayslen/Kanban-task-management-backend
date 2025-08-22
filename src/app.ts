@@ -2,12 +2,15 @@ import express, { json } from 'express';
 import { createAuthRoutes } from './routes/authRoutes.js';
 import { MySqlModel } from './models/mysqlModel.js'
 import { SERVER_PORT } from './config.js';
+import { Authorization } from './middleware/authorization.js';
+import CookieParser from 'cookie-parser'
 
 const app = express();
 
 const authRoutes = await createAuthRoutes(MySqlModel)
 
 app.use(json())
+app.use(CookieParser())
 app.use(authRoutes)
 
 app.listen(SERVER_PORT, () => {
