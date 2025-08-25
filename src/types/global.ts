@@ -2,16 +2,19 @@ import z from 'zod'
 import { RowDataPacket } from 'mysql2/promise'
 import { MySqlModel } from "../models/mysqlModel.js";
 import { userSchema } from "../schema/userSchema.js";
+import { boardSchema } from 'src/schema/boardSchema.js';
 
 
 export type SQLModel = typeof MySqlModel
+
 export type UserDTO = z.infer<typeof userSchema>
 export type UserParams = { username: string, password: string }
+
+export type BoardBasicInfoDTO = z.infer<typeof boardSchema>
 
 export interface UserRow extends RowDataPacket {
     username: string
 }
-
 export interface UserDb extends RowDataPacket {
     username: string
     user_id: string
@@ -37,10 +40,14 @@ export interface VerifyResult {
     expired: boolean;
 }
 
-declare global {
-    namespace Express {
-        interface Request {
-            user?: any
+import 'express';
+
+declare module 'express' {
+    export interface Request {
+        user?: {
+            username: string,
+            sessionId: string,
+            userId: string
         }
     }
 }

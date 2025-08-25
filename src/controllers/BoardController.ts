@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
-import { SQLModel } from "@Types/global";
 import bycrypt from 'bcrypt'
+import { SQLModel } from "@Types/global";
 import { ROUND_SALT } from "../config.js";
-import { throwResponseError } from "../schema/Errors.js";
-import { parseUser } from "../utils/parseCredentials.js";
 import { ACCESS_TOKEN_EXP, REFRESH_TOKEN_EXP } from "../config.js";
+import { parseUser } from "../utils/parseCredentials.js";
 import { createJWT } from "../utils/JWT.js";
+import { throwResponseError } from "../schema/Errors.js";
+import { validateBoardSchema } from "../schema/boardSchema.js";
 
 export class Controller {
     private BoardModel;
@@ -48,6 +49,26 @@ export class Controller {
 
         } catch (Error) {
             throwResponseError({ error: Error as Error, res })
+        }
+    }
+
+    newBoard = async (req: Request, res: Response) => {
+        const boardInput = req.body
+        const user = req.user
+
+        if (!user) return res.sendStatus(403)
+
+        const { success, data, error } = validateBoardSchema(boardInput)
+
+        if (!success) {
+            const fieldsErrors = error.issues.map(data => `${data.path}: ${data.message}`)
+            return res.status(400).json({ errors: fieldsErrors })
+        }
+        try {
+            const newBoard = await this.BoardModel.newBoard({ board: data, userId: user?.userId })
+            res.status(201).json(newBoard)
+        } catch (error) {
+            throwResponseError({ error: error as Error, res })
         }
     }
 

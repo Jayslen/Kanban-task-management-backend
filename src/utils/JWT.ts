@@ -5,13 +5,13 @@ import { Payload, VerifyResult } from '@Types/global'
 export function createJWT(input: { data: any, expiresIn: any }) {
     const { data, expiresIn = "1m" } = input
 
-    return jwt.sign(data, TOKEN_SECRET_KEY, { expiresIn })
+    return jwt.sign(data, TOKEN_SECRET_KEY, { expiresIn: expiresIn })
 }
 
 export function verifyToken(token: string): VerifyResult {
     try {
         const verifiedToken = jwt.verify(token, TOKEN_SECRET_KEY) as jwt.JwtPayload
-        if (typeof verifiedToken && typeof verifiedToken === "object") {
+        if (typeof verifiedToken === "object") {
             const { userId, sessionId, username } = verifiedToken as Payload
             return { payload: { userId, sessionId, username }, expired: false }
         }
