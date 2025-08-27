@@ -37,7 +37,16 @@ export class UnauthorizedUser extends Error implements ResponseError {
     }
 }
 
-const customErrors = [UserNotFound, UserNotAvailable, WrongUserPassword, UnauthorizedUser]
+export class BoardNotFound extends Error implements ResponseError {
+    public statusCode: number
+    constructor(message = "The board requested was not found") {
+        super(message)
+        this.name = "BoardNotFound"
+        this.statusCode = 404
+    }
+}
+
+const customErrors = [UserNotFound, UserNotAvailable, WrongUserPassword, UnauthorizedUser, BoardNotFound]
 
 export function throwResponseError(input: { res: Response, error: Error }) {
     const { error, res } = input

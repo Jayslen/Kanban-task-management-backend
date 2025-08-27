@@ -40,7 +40,9 @@ export interface VerifyResult {
     expired: boolean;
 }
 
-import 'express';
+export interface Owner extends RowDataPacket {
+    owner: string
+}
 
 declare module 'express' {
     export interface Request {
