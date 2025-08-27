@@ -1,15 +1,14 @@
-import { createConnection, ResultSetHeader } from 'mysql2/promise'
+import { ResultSetHeader } from 'mysql2/promise'
 import bcrypt from 'bcrypt'
 import { BoardBasicInfoDTO, UserDb, UserParams, UserRow } from '@Types/global'
-import { DB_CONFIG } from '../config.js'
 import {
     UserNotAvailable,
     UserNotFound,
     WrongUserPassword,
 } from '../schema/Errors.js'
+import { getDb } from '../utils/db.js'
 
-//@ts-expect-error: Not type yet
-const db = await createConnection(DB_CONFIG)
+const db = await getDb()
 
 export class MySqlModel {
     static resister = async (input: UserParams) => {
