@@ -23,7 +23,7 @@ export class MySqlModel {
             throw new UserNotAvailable()
         }
 
-        //@ts-expect-error: Not type yet
+        // @ts-expect-error: Not type yet
         const [[{ uuid }]] = await db.query('SELECT uuid() AS uuid')
         await db.query(
             'INSERT INTO users (user_id, username, password) VALUES (UUID_TO_BIN(?),?,?)',
@@ -80,5 +80,41 @@ export class MySqlModel {
         const [boardColumns] = await db.query('SELECT name FROM columns WHERE board = UUID_TO_BIN(?)', [uuid])
 
         return { ...newBoard, columns: boardColumns }
+    }
+
+    static updateBoard = async (input: {
+        colsToUpdate: { id: number, payload: string }[]
+        colsToRemove: { id: number, remove: boolean }[]
+        colsToAdd: string[]
+        name: string
+        boardId: string
+    }) => {
+        const { colsToRemove, colsToUpdate, colsToAdd, name, boardId } = input
+
+        if (name) {
+            await db.query('UPDATE BOARDS SET name = ? WHERE BIN_TO_UUID(board_id) = ?', [name, boardId])
+        }
+
+
+        if (colsToRemove.length > 0) {
+            await db.query(`DELETE FROM columns WHERE column_id IN (${colsToRemove.map(col => col.id).join(',')})`)
+        }
+
+        if (colsToUpdate.length > 0) {
+            const whenStatements = colsToUpdate.map(({ id, payload }) => `WHEN ${id} THEN "${payload}"`).join(' ')
+            const ids = colsToUpdate.map(col => col.id).join(',')
+            const query = `UPDATE columns SET name = CASE column_id ${whenStatements} END WHERE column_id IN (${ids})`
+            await db.query(query)
+        }
+
+        if (colsToAdd.length > 0) {
+            const params = colsToAdd.map(col => `("${col}", UUID_TO_BIN("${boardId}"))`).join(', ')
+            await db.query(`INSERT INTO columns (name, board) VALUES ${params}`, [...colsToAdd])
+        }
+
+        const [results] = await db.query('SELECT name FROM boards WHERE BIN_TO_UUID(board_id) = ?', [boardId])
+        const [columns] = await db.query('SELECT name FROM columns WHERE BIN_TO_UUID(board) = ?', [boardId])
+
+        return { board: results[0].name, columns }
     }
 }

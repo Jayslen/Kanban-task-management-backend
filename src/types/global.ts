@@ -27,6 +27,7 @@ export interface UUIDResponse extends RowDataPacket {
 
 export interface ResponseError extends Error {
     statusCode: number
+    errors?: string[]
 }
 
 export interface Payload {
