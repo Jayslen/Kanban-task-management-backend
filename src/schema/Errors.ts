@@ -48,9 +48,9 @@ export class BoardNotFound extends Error implements ResponseError {
 
 export class ValidationError extends Error implements ResponseError {
     public statusCode: number
-    public errors: string[]
-    constructor(statusCode: number, errors: string[]) {
-        super("The data send is not well structure. Try again")
+    public errors?: [string, unknown][]
+    constructor(statusCode: number, errors: [string, unknown][]) {
+        super("The data send is not well strtucture. Try again")
         this.name = "ValidationError"
         this.statusCode = statusCode
         this.errors = errors

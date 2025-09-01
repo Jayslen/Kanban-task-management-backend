@@ -2,8 +2,17 @@ import z from 'zod'
 import { RowDataPacket } from 'mysql2/promise'
 import { MySqlModel } from "../models/mysqlModel.js";
 import { userSchema } from "../schema/userSchema.js";
-import { boardSchema } from 'src/schema/boardSchema.js';
+import { boardSchema, taskBoardSchema } from 'src/schema/boardSchema.js';
 
+declare module 'express' {
+    export interface Request {
+        user?: {
+            username: string,
+            sessionId: string,
+            userId: string
+        }
+    }
+}
 
 export type SQLModel = typeof MySqlModel
 
@@ -27,7 +36,7 @@ export interface UUIDResponse extends RowDataPacket {
 
 export interface ResponseError extends Error {
     statusCode: number
-    errors?: string[]
+    errors?: [string, unknown][]
 }
 
 export interface Payload {
@@ -45,12 +54,5 @@ export interface Owner extends RowDataPacket {
     owner: string
 }
 
-declare module 'express' {
-    export interface Request {
-        user?: {
-            username: string,
-            sessionId: string,
-            userId: string
-        }
-    }
-}
+export type BoardTask = z.infer<typeof taskBoardSchema>
+
