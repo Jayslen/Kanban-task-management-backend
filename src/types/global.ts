@@ -56,3 +56,16 @@ export interface Owner extends RowDataPacket {
 
 export type BoardTask = z.infer<typeof taskBoardSchema>
 
+export interface TaskDb extends RowDataPacket {
+    name: string
+    description: string
+}
+
+export interface SubtasksDb extends RowDataPacket {
+    name: string,
+    isComplete: 0 | 1
+}
+
+export interface DbUUID extends RowDataPacket {
+    uuid: string
+}

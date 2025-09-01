@@ -1,5 +1,4 @@
 import z from 'zod'
-import { BoardBasicInfoDTO } from '@Types/global'
 
 export const boardSchema = z.object({
     name: z.string().min(6).max(60),
@@ -19,10 +18,21 @@ export const updateColumnsBoardSchema = z.object({
     })
 })
 
-export function validateBoardSchema(input: BoardBasicInfoDTO) {
+export const taskBoardSchema = z.object({
+    name: z.string().min(6).max(40),
+    description: z.string().min(8).max(150).optional(),
+    subtasks: z.array(z.string().min(6).max(40)),
+    status: z.number()
+})
+
+export function validateBoardSchema(input: unknown) {
     return boardSchema.safeParse(input)
 }
 
 export function validateBoardColumnsSchema(input: unknown) {
     return updateColumnsBoardSchema.safeParse(input)
+}
+
+export function validateTaskBoard(input: unknown) {
+    return taskBoardSchema.safeParse(input)
 }

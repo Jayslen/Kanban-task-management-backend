@@ -11,6 +11,7 @@ export async function createBoardRouter(Model: SQLModel): Promise<Router> {
 
     router.post('/', Controller.newBoard)
     router.patch('/:boardId', boardAuthorization, Controller.updateBoard)
+    router.post('/task/:boardId', boardAuthorization, Controller.createTask)
 
     return router
 }

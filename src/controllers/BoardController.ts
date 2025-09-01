@@ -6,7 +6,8 @@ import { ACCESS_TOKEN_EXP, REFRESH_TOKEN_EXP } from "../config.js";
 import { parseUser } from "../utils/parseCredentials.js";
 import { createJWT } from "../utils/JWT.js";
 import { throwResponseError, ValidationError } from "../schema/Errors.js";
-import { validateBoardColumnsSchema, validateBoardSchema } from "../schema/boardSchema.js";
+import { validateBoardColumnsSchema, validateBoardSchema, validateTaskBoard } from "../schema/boardSchema.js";
+import { formatZodError } from "src/utils/zodError.js";
 
 export class Controller {
     private BoardModel;
@@ -61,7 +62,7 @@ export class Controller {
         try {
             const { success, data, error } = validateBoardSchema(boardInput)
 
-            if (!success) throw new ValidationError(400, error.issues.map(data => data.message))
+            if (!success) throw new ValidationError(400, formatZodError(error))
 
             const newBoard = await this.BoardModel.newBoard({ board: data, userId: user?.userId })
             res.status(201).json(newBoard)
@@ -77,7 +78,7 @@ export class Controller {
 
             const { success, data, error } = validateBoardColumnsSchema(input)
 
-            if (!success) throw new ValidationError(400, error.issues.map(data => data.message))
+            if (!success) throw new ValidationError(400, formatZodError(error))
 
             const { columns: { add: newCols, edit: existCols }, name } = data
 
@@ -94,7 +95,21 @@ export class Controller {
         } catch (error) {
             throwResponseError({ error, res })
         }
+    }
 
+    createTask = async (req: Request, res: Response) => {
+        const { boardId } = req.params
+        const input = req.body
+
+        try {
+            const { success, data, error } = validateTaskBoard(input)
+            if (!success) throw new ValidationError(400, formatZodError(error))
+
+            const taskCreated = await this.BoardModel.createTask({ boardId, task: data })
+            res.status(201).json(taskCreated)
+        } catch (error) {
+            throwResponseError({ error, res })
+        }
     }
 
 }
