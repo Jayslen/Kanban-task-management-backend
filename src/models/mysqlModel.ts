@@ -139,8 +139,8 @@ export class MySqlModel {
             await db.query(`INSERT INTO subtasks (task, name) VALUES ${subtasksValues}`)
         }
 
-        const [[taskCreated]] = await db.query<TaskDb[]>('SELECT name, description FROM tasks WHERE task_id = UUID_TO_BIN(?)', [newTaskId])
-        const [subtaskResults] = await db.query<SubtasksDb[]>('SELECT name,isComplete FROM subtasks WHERE BIN_TO_UUID(task) = ?', [newTaskId])
+        const [[taskCreated]] = await db.query<TaskDb[]>('SELECT BIN_TO_UUID(task_id) AS id, name, description FROM tasks WHERE task_id = UUID_TO_BIN(?)', [newTaskId])
+        const [subtaskResults] = await db.query<SubtasksDb[]>('SELECT subtask_id AS id, name, isComplete FROM subtasks WHERE BIN_TO_UUID(task) = ?', [newTaskId])
         const [[taskStatus]] = await db.query('SELECT name FROM board_columns WHERE column_id = ?', [status])
 
 
