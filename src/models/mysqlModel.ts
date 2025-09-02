@@ -47,7 +47,7 @@ export class MySqlModel {
             throw new WrongUserPassword()
         }
 
-        const [[{ uuid: sessionUUID }]] = await db.query<DbUUID[]>('SELECT uuid() AS sessionUUID')
+        const [[{ uuid: sessionUUID }]] = await db.query<DbUUID[]>('SELECT uuid() AS uuid')
         const [results] = await db.query<ResultSetHeader>(
             'INSERT INTO sessions (session_id,user_id) VALUES (UUID_TO_BIN(?), UUID_TO_BIN(?))',
             [sessionUUID, userFound.user_id]
