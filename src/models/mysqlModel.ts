@@ -117,6 +117,10 @@ export class MySqlModel {
         return { board: boardName[0].name, columns }
     }
 
+    static deleteBoard = async (boardId: string) => {
+        await db.query('DELETE FROM boards WHERE BIN_TO_UUID(board_id) = ?', [boardId])
+    }
+
     static createTask = async (input: { boardId: string, task: BoardTask }) => {
         const { boardId, task: { name, status, description, subtasks } } = input
 

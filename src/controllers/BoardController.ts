@@ -97,6 +97,17 @@ export class Controller {
         }
     }
 
+    deleteBoard = async (req: Request, res: Response) => {
+        const { boardId } = req.params
+        try {
+            await this.BoardModel.deleteBoard(boardId)
+            res.sendStatus(200)
+        } catch (error) {
+            throwResponseError({ error, res })
+        }
+
+    }
+
     createTask = async (req: Request, res: Response) => {
         const { boardId } = req.params
         const input = req.body
