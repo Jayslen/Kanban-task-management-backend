@@ -102,8 +102,8 @@ export class MySqlModel {
         if (colsToUpdate.length > 0) {
             const whenStatements = colsToUpdate.map(({ id, payload }) => `WHEN ${id} THEN "${payload}"`).join(' ')
             const ids = colsToUpdate.map(col => col.id).join(',')
-            const query = `UPDATE columns SET name = CASE column_id ${whenStatements} END WHERE column_id IN (${ids})`
-            await db.query(query)
+            const query = `UPDATE board_columns SET name = CASE column_id ${whenStatements} END WHERE column_id IN (${ids}) AND BIN_TO_UUID(board) = ?`
+            await db.query(query, [boardId])
         }
 
         if (colsToAdd.length > 0) {
@@ -146,6 +146,44 @@ export class MySqlModel {
 
         return {
             ...taskCreated, status: taskStatus.name, subtasks: subtaskResults.map(task => ({ ...task, isComplete: Boolean(task.isComplete) }))
+        }
+    }
+
+    static updateTask = async (input:
+        {
+            boardId: string,
+            taskId: string,
+            name: string | undefined,
+            description: string | undefined,
+            status: number | undefined,
+            tasktoDelete: number[],
+            tasktoUpdate: { name: string, id: number }[],
+            tasktoAdd: string[]
+        }) => {
+        const { boardId, taskId, name, description, tasktoAdd, tasktoDelete, tasktoUpdate } = input
+
+        if (name) {
+            await db.query('UPDATE tasks SET name = ? WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?', [name, taskId, boardId])
+        }
+        if (description) {
+            await db.query('UPDATE tasks SET description = ? WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?', [description, taskId, boardId])
+        }
+
+        if (tasktoDelete.length > 0) {
+            await db.query(`DELETE FROM subtasks WHERE subtask_id IN (${tasktoDelete.join(',')}) AND BIN_TO_UUID(task) = ?`, [taskId])
+        }
+
+
+        if (tasktoUpdate.length > 0) {
+            const whenStatements = tasktoUpdate.map(({ id, name }) => `WHEN ${id} THEN "${name}"`).join(' ')
+            const ids = tasktoUpdate.map(task => task.id).join(',')
+            const query = `UPDATE subtasks SET name = CASE subtask_id ${whenStatements} END WHERE subtask_id IN (${ids}) AND BIN_TO_UUID(task) = ?`
+            await db.query(query, [taskId])
+        }
+
+        if (tasktoAdd.length > 0) {
+            const subtasksValues = tasktoAdd.map(name => `(UUID_TO_BIN('${taskId}'),'${name}')`).join(',')
+            await db.query(`INSERT INTO subtasks (task, name) VALUES ${subtasksValues}`)
         }
     }
 }

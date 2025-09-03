@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
 import bycrypt from 'bcrypt'
-import { SQLModel } from "@Types/global";
+import { SQLModel, TaskDb } from "@Types/global";
 import { ROUND_SALT } from "../config.js";
 import { ACCESS_TOKEN_EXP, REFRESH_TOKEN_EXP } from "../config.js";
 import { parseUser } from "../utils/parseCredentials.js";
 import { createJWT } from "../utils/JWT.js";
 import { throwResponseError, ValidationError } from "../schema/Errors.js";
-import { validateBoardColumnsSchema, validateBoardSchema, validateTaskBoard } from "../schema/boardSchema.js";
-import { formatZodError } from "src/utils/zodError.js";
+import { validateBoardColumnsSchema, validateBoardSchema, validateBoardTaskUpdateSchema, validateTaskBoard } from "../schema/boardSchema.js";
+import { formatZodError } from "../utils/zodError.js";
 
 export class Controller {
     private BoardModel;
@@ -121,6 +121,51 @@ export class Controller {
         } catch (error) {
             throwResponseError({ error, res })
         }
+    }
+
+    updateTask = async (req: Request, res: Response) => {
+        const { taskId, boardId } = req.params
+        const input = req.body
+
+        try {
+            const { data: taskFields, error } = validateBoardTaskUpdateSchema(input)
+
+            if (error) throw new ValidationError(400, formatZodError(error))
+
+            const { toAdd, toDelete, toUpdate } = taskFields.subtasks ? taskFields.subtasks.reduce(
+                (acc, task) => {
+                    if (task.id !== undefined && task.name === undefined) {
+                        acc.toDelete.push(task.id);
+                    } else if (task.id === undefined && task.name !== undefined) {
+                        acc.toAdd.push(task.name);
+                    } else if (task.id !== undefined && task.name !== undefined) {
+                        acc.toUpdate.push({ id: task.id, name: task.name });
+                    }
+                    return acc;
+                },
+                {
+                    toAdd: [] as string[],
+                    toDelete: [] as number[],
+                    toUpdate: [] as { id: number; name: string }[],
+                }
+            ) : { toAdd: [], toDelete: [], toUpdate: [] }
+
+            this.BoardModel.updateTask({
+                boardId,
+                taskId,
+                name: taskFields.name,
+                description: taskFields.description,
+                status: taskFields.status,
+                tasktoAdd: toAdd,
+                tasktoDelete: toDelete,
+                tasktoUpdate: toUpdate
+            })
+
+            res.sendStatus(200)
+        } catch (error) {
+            throwResponseError({ error, res })
+        }
+
     }
 
 }
