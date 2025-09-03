@@ -165,7 +165,15 @@ export class Controller {
         } catch (error) {
             throwResponseError({ error, res })
         }
-
     }
 
+    deleteTask = async (req: Request, res: Response) => {
+        const { taskId, boardId } = req.params
+        try {
+            await this.BoardModel.deleteTask({ boardId, taskId })
+            res.sendStatus(200)
+        } catch (error) {
+            throwResponseError({ error, res })
+        }
+    }
 }

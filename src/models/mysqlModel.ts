@@ -186,4 +186,9 @@ export class MySqlModel {
             await db.query(`INSERT INTO subtasks (task, name) VALUES ${subtasksValues}`)
         }
     }
+
+    static deleteTask = async (input: { boardId: string, taskId: string }) => {
+        const { boardId, taskId } = input
+        await db.query('DELETE FROM tasks WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?', [taskId, boardId])
+    }
 }

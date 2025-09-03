@@ -14,6 +14,7 @@ export async function createBoardRouter(Model: SQLModel): Promise<Router> {
     router.delete('/:boardId', boardAuthorization, Controller.deleteBoard)
     router.post('/:boardId/task', boardAuthorization, Controller.createTask)
     router.patch('/:boardId/task/:taskId', boardAuthorization, Controller.updateTask)
+    router.delete('/:boardId/task/:taskId', boardAuthorization, Controller.deleteTask)
 
     return router
 }
