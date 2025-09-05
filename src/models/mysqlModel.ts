@@ -191,4 +191,39 @@ export class MySqlModel {
         const { boardId, taskId } = input
         await db.query('DELETE FROM tasks WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?', [taskId, boardId])
     }
+
+    static getBoards = async (userId: string) => {
+        const [boards] = await db.query('SELECT BIN_TO_UUID(board_id) AS id, name, timestamp as createdAt FROM boards WHERE BIN_TO_UUID(owner) = ?', [userId])
+
+        return boards
+
+    }
+    static getBoardById = async (boardId: string) => {
+        const [[board]] = await db.query('SELECT BIN_TO_UUID(board_id) AS id, name, timestamp as createdAt FROM boards WHERE BIN_TO_UUID(board_id) = ?', [boardId])
+        if (!board) throw new Error('Board not found')
+        const [columns] = await db.query('SELECT column_id AS id, name FROM board_columns WHERE BIN_TO_UUID(board) = ?', [boardId])
+        const [tasks] = await db.query<TaskDb[]>('SELECT BIN_TO_UUID(task_id) AS id, name, description, column_id FROM tasks WHERE BIN_TO_UUID(board_id) = ?', [boardId])
+
+
+        const [subtasks] = await db.query('SELECT subtask_id AS id, name, isComplete, BIN_TO_UUID(task) AS task_id FROM subtasks WHERE task IN (SELECT task_id FROM tasks WHERE BIN_TO_UUID(board_id) = ?)', [boardId])
+
+        const tasksWithSubtasks = tasks.map(task => {
+            return {
+                ...task,
+                subtasks: subtasks.filter(subtask => subtask.task_id === task.id).map(subtask => ({ ...subtask, isComplete: Boolean(subtask.isComplete) }))
+            }
+        })
+
+        console.log(tasksWithSubtasks);
+
+        const columnsTaks = columns.map(col => {
+            return {
+                id: col.id,
+                name: col.name,
+                tasks: tasksWithSubtasks.filter(task => task.column_id === col.id)
+            }
+        })
+
+        return { ...board, columns: columnsTaks }
+    }
 }

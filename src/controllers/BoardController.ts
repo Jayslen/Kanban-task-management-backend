@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import bycrypt from 'bcrypt'
-import { SQLModel, TaskDb } from "@Types/global";
+import { SQLModel } from "@Types/global";
 import { ROUND_SALT } from "../config.js";
 import { ACCESS_TOKEN_EXP, REFRESH_TOKEN_EXP } from "../config.js";
 import { parseUser } from "../utils/parseCredentials.js";
@@ -174,6 +174,28 @@ export class Controller {
             res.sendStatus(200)
         } catch (error) {
             throwResponseError({ error, res })
+        }
+    }
+
+    getBoards = async (req: Request, res: Response) => {
+        const { userId } = (req.user) as { userId: string }
+
+        try {
+            const boards = await this.BoardModel.getBoards(userId)
+            res.status(200).json(boards)
+        } catch (error) {
+            throwResponseError({ error: error, res })
+        }
+
+    }
+    getBoardById = async (req: Request, res: Response) => {
+        const { boardId } = req.params
+
+        try {
+            const board = await this.BoardModel.getBoardById(boardId)
+            res.status(200).json(board)
+        } catch (error) {
+            throwResponseError({ error: error as Error, res })
         }
     }
 }
