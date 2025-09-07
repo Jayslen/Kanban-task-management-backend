@@ -34,22 +34,6 @@ export interface UUIDResponse extends RowDataPacket {
     uuid: string
 }
 
-export interface ResponseError extends Error {
-    statusCode: number
-    errors?: [string, unknown][]
-}
-
-export interface Payload {
-    userId: string;
-    username: string;
-    sessionId: string;
-}
-
-export interface VerifyResult {
-    payload: Payload | null;
-    expired: boolean;
-}
-
 export interface Owner extends RowDataPacket {
     owner: string
 }
@@ -69,3 +53,41 @@ export interface SubtasksDb extends RowDataPacket {
 export interface DbUUID extends RowDataPacket {
     uuid: string
 }
+
+export interface ResponseError extends Error {
+    statusCode: number
+    errors?: [string, unknown][]
+}
+
+export interface Payload {
+    userId: string;
+    username: string;
+    sessionId: string;
+}
+
+export interface VerifyResult {
+    payload: Payload | null;
+    expired: boolean;
+}
+
+
+type Subtask = {
+    id: number;
+    name: string;
+    isComplete: boolean;
+    task_id: string;
+};
+
+type Task = {
+    id: string;
+    name: string | null;
+    description: string | null;
+    column_id: number | null;
+    subtasks: Subtask[];
+};
+
+export type Column = {
+    id: number;
+    name: string;
+    tasks: Task[];
+};

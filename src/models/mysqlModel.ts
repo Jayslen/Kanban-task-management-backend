@@ -1,10 +1,12 @@
 import { ResultSetHeader } from 'mysql2/promise'
 import bcrypt from 'bcrypt'
-import { BoardBasicInfoDTO, BoardTask, DbUUID, SubtasksDb, TaskDb, UserDb, UserParams, UserRow } from '@Types/global'
+import { UserParams, BoardBasicInfoDTO, BoardTask, Column } from '@Types/global'
+import { UserName, UUID, UserCredentials, BoardBasicInfoDB, TaskDB, SubtasksDb, ColumnsDB, BoardWithColumnsDB, ColumnsWithTasks } from '@Types/db'
+import { getBoardBasicInfo, getBoardBasicInfoByOwner, getBoardWithColumns, getColumns, getColumnsWithTasks } from '../utils/dbQueries.js'
 import {
     UserNotAvailable,
     UserNotFound,
-    WrongUserPassword,
+    WrongUserPassword
 } from '../schema/Errors.js'
 import { getDb } from '../utils/db.js'
 
@@ -14,7 +16,7 @@ export class MySqlModel {
     static resister = async (input: UserParams) => {
         const { username, password } = input
 
-        const [users] = await db.query<UserRow[]>(
+        const [users] = await db.query<UserName[]>(
             'SELECT username FROM users WHERE LOWER(username) = LOWER(?)',
             [username]
         )
@@ -23,7 +25,7 @@ export class MySqlModel {
             throw new UserNotAvailable()
         }
 
-        const [[{ uuid }]] = await db.query<DbUUID[]>('SELECT uuid() AS uuid')
+        const [[{ uuid }]] = await db.query<UUID[]>('SELECT uuid() AS uuid')
         await db.query(
             'INSERT INTO users (user_id, username, password) VALUES (UUID_TO_BIN(?),?,?)',
             [uuid, username, password]
@@ -33,8 +35,10 @@ export class MySqlModel {
     static login = async (input: UserParams) => {
         const { username, password } = input
 
-        const [[userFound]] = await db.query<UserDb[]>(
-            'SELECT username, password, BIN_TO_UUID(user_id) AS user_id FROM users WHERE LOWER(username) = LOWER(?)',
+        const [[userFound]] = await db.query<UserCredentials[]>(
+            `SELECT 
+                username, password, BIN_TO_UUID(user_id) AS user_id 
+            FROM users WHERE LOWER(username) = LOWER(?)`,
             [username]
         )
         if (!userFound) {
@@ -47,9 +51,10 @@ export class MySqlModel {
             throw new WrongUserPassword()
         }
 
-        const [[{ uuid: sessionUUID }]] = await db.query<DbUUID[]>('SELECT uuid() AS uuid')
+        const [[{ uuid: sessionUUID }]] = await db.query<UUID[]>('SELECT uuid() AS uuid')
         const [results] = await db.query<ResultSetHeader>(
-            'INSERT INTO sessions (session_id,user_id) VALUES (UUID_TO_BIN(?), UUID_TO_BIN(?))',
+            `INSERT INTO sessions (session_id,user_id)
+            VALUES (UUID_TO_BIN(?), UUID_TO_BIN(?))`,
             [sessionUUID, userFound.user_id]
         )
 
@@ -60,7 +65,7 @@ export class MySqlModel {
 
     static newBoard = async (input: { board: BoardBasicInfoDTO, userId: string }) => {
         const { board, userId } = input
-        const [[{ uuid }]] = await db.query<DbUUID[]>('SELECT uuid() AS uuid')
+        const [[{ uuid }]] = await db.query<UUID[]>('SELECT uuid() AS uuid')
 
         const columnsPlaceholders = board.columns.map(() => '(?, UUID_TO_BIN(?))').join(', ');
         const columnsParams = board.columns.flatMap(name => [name, uuid]);
@@ -70,13 +75,8 @@ export class MySqlModel {
         await db.query('INSERT INTO boards (board_id, name, owner) VALUES (UUID_TO_BIN(?),?,UUID_TO_BIN(?))', [uuid, board.name, userId])
         await db.query(columnsQuery, columnsParams);
 
-        const [[newBoard]] = await db.query(
-            `SELECT BIN_TO_UUID(board_id) as boardId, name, timestamp 
-            FROM boards 
-            WHERE board_id = UUID_TO_BIN(?)`,
-            [uuid]
-        )
-        const [boardColumns] = await db.query('SELECT name FROM board_columns WHERE board = UUID_TO_BIN(?)', [uuid])
+        const [[newBoard]] = await db.query<BoardBasicInfoDB[]>(getBoardBasicInfo, [uuid])
+        const [boardColumns] = await db.query(getColumns, [uuid])
 
         return { ...newBoard, columns: boardColumns }
     }
@@ -111,10 +111,11 @@ export class MySqlModel {
             await db.query(`INSERT INTO board_columns (name, board) VALUES ${params}`, [...colsToAdd])
         }
 
-        const [boardName] = await db.query('SELECT name FROM boards WHERE BIN_TO_UUID(board_id) = ?', [boardId])
-        const [columns] = await db.query('SELECT name FROM board_columns WHERE BIN_TO_UUID(board) = ?', [boardId])
+        const [boardWithCols] = await db.query<BoardWithColumnsDB[]>(getBoardWithColumns, [boardId])
 
-        return { board: boardName[0].name, columns }
+        const boardName = boardWithCols[0].name
+        const columns = boardWithCols.map(col => ({ id: col.column_id, name: col.columnName }))
+        return { board: boardName, columns }
     }
 
     static deleteBoard = async (boardId: string) => {
@@ -124,7 +125,7 @@ export class MySqlModel {
     static createTask = async (input: { boardId: string, task: BoardTask }) => {
         const { boardId, task: { name, status, description, subtasks } } = input
 
-        const [[{ uuid: newTaskId }]] = await db.query<DbUUID[]>('SELECT uuid() AS uuid')
+        const [[{ uuid: newTaskId }]] = await db.query<UUID[]>('SELECT uuid() AS uuid')
 
         await db.query(`
             INSERT INTO tasks (task_id,board_id,name,description,column_id)
@@ -133,16 +134,13 @@ export class MySqlModel {
 
 
         if (subtasks.length > 0) {
-            const subtasksValues = subtasks.map(task => `(UUID_TO_BIN('${newTaskId}'),'${task}')`)
-                .join(',')
-
+            const subtasksValues = subtasks.map(task => `(UUID_TO_BIN('${newTaskId}'),'${task}')`).join(',')
             await db.query(`INSERT INTO subtasks (task, name) VALUES ${subtasksValues}`)
         }
 
-        const [[taskCreated]] = await db.query<TaskDb[]>('SELECT BIN_TO_UUID(task_id) AS id, name, description FROM tasks WHERE task_id = UUID_TO_BIN(?)', [newTaskId])
+        const [[taskCreated]] = await db.query<TaskDB[]>('SELECT BIN_TO_UUID(task_id) AS id, name, description FROM tasks WHERE task_id = UUID_TO_BIN(?)', [newTaskId])
         const [subtaskResults] = await db.query<SubtasksDb[]>('SELECT subtask_id AS id, name, isComplete FROM subtasks WHERE BIN_TO_UUID(task) = ?', [newTaskId])
-        const [[taskStatus]] = await db.query('SELECT name FROM board_columns WHERE column_id = ?', [status])
-
+        const [[taskStatus]] = await db.query<ColumnsDB[]>(getColumns, [status])
 
         return {
             ...taskCreated, status: taskStatus.name, subtasks: subtaskResults.map(task => ({ ...task, isComplete: Boolean(task.isComplete) }))
@@ -193,37 +191,52 @@ export class MySqlModel {
     }
 
     static getBoards = async (userId: string) => {
-        const [boards] = await db.query('SELECT BIN_TO_UUID(board_id) AS id, name, timestamp as createdAt FROM boards WHERE BIN_TO_UUID(owner) = ?', [userId])
+        const [boards] = await db.query<BoardBasicInfoDB[]>(getBoardBasicInfoByOwner, [userId])
 
         return boards
 
     }
+
     static getBoardById = async (boardId: string) => {
-        const [[board]] = await db.query('SELECT BIN_TO_UUID(board_id) AS id, name, timestamp as createdAt FROM boards WHERE BIN_TO_UUID(board_id) = ?', [boardId])
+        const [[board]] = await db.query<BoardBasicInfoDB[]>(getBoardBasicInfo, [boardId])
+
         if (!board) throw new Error('Board not found')
-        const [columns] = await db.query('SELECT column_id AS id, name FROM board_columns WHERE BIN_TO_UUID(board) = ?', [boardId])
-        const [tasks] = await db.query<TaskDb[]>('SELECT BIN_TO_UUID(task_id) AS id, name, description, column_id FROM tasks WHERE BIN_TO_UUID(board_id) = ?', [boardId])
 
+        const [rows] = await db.query<ColumnsWithTasks[]>(getColumnsWithTasks, [boardId, boardId]);
 
-        const [subtasks] = await db.query('SELECT subtask_id AS id, name, isComplete, BIN_TO_UUID(task) AS task_id FROM subtasks WHERE task IN (SELECT task_id FROM tasks WHERE BIN_TO_UUID(board_id) = ?)', [boardId])
-
-        const tasksWithSubtasks = tasks.map(task => {
-            return {
-                ...task,
-                subtasks: subtasks.filter(subtask => subtask.task_id === task.id).map(subtask => ({ ...subtask, isComplete: Boolean(subtask.isComplete) }))
+        const columns = rows.reduce<Column[]>((acc, row) => {
+            let column = acc.find(col => col.id === row.columnId);
+            if (!column) {
+                column = { id: row.column_id, name: row.column_name, tasks: [] };
+                acc.push(column);
             }
-        })
 
-        console.log(tasksWithSubtasks);
+            if (row.task_id) {
+                let task = column.tasks.find(t => t.id === row.task_id);
+                if (task) {
+                    task = {
+                        id: row.task_id,
+                        name: row.task_name,
+                        description: row.task_description,
+                        column_id: row.columnId,
+                        subtasks: []
+                    };
+                    column.tasks.push(task);
 
-        const columnsTaks = columns.map(col => {
-            return {
-                id: col.id,
-                name: col.name,
-                tasks: tasksWithSubtasks.filter(task => task.column_id === col.id)
+                    if (row.subtask_id) {
+                        task.subtasks.push({
+                            id: row.subtask_id,
+                            name: row.subtask_name,
+                            isComplete: !!row.subtask_isComplete,
+                            task_id: row.task_id
+                        });
+                    }
+                }
             }
-        })
 
-        return { ...board, columns: columnsTaks }
+            return acc;
+        }, []);
+
+        return { ...board, columns }
     }
 }
