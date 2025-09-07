@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { Owner } from "@Types/global";
+import { Owner } from "@Types/db";
 import { getDb } from "../utils/db.js";
 import { BoardNotFound, throwResponseError, UnauthorizedUser } from "../schema/Errors.js";
 

@@ -65,3 +65,9 @@ export interface ColumnsWithTasks extends RowDataPacket {
     subtask_name: string,
     subtask_isComplete: 0 | 1 | null
 }
+
+export interface Session extends RowDataPacket {
+    session_id: string
+    user_id: string
+    createdAt: Date
+}

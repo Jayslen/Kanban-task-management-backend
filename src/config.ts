@@ -19,7 +19,7 @@ export const {
 export const DB_CONFIG = {
     host: HOST,
     user: USER,
-    port: PORT,
+    port: +PORT,
     database: DATABASE,
     waitForConnections: true,
     connectionLimit: 10,
