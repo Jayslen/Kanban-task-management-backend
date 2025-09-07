@@ -1,7 +1,8 @@
 import { ResultSetHeader } from 'mysql2/promise'
 import bcrypt from 'bcrypt'
-import { UserParams, BoardBasicInfoDTO, BoardTask, Column } from '@Types/global'
-import { UserName, UUID, UserCredentials, BoardBasicInfoDB, TaskDB, SubtasksDb, ColumnsDB, BoardWithColumnsDB, ColumnsWithTasks } from '@Types/db'
+import { UserParams } from '@CustomTypes/user'
+import { BoardBasicInfoDTO, BoardTask, Column } from '@CustomTypes/board'
+import { UserName, UUID, UserCredentials, BoardBasicInfoDB, TaskDB, SubtasksDb, ColumnsDB, BoardWithColumnsDB, ColumnsWithTasks } from '@CustomTypes/db'
 import { getBoardBasicInfo, getBoardBasicInfoByOwner, getBoardWithColumns, getColumns, getColumnsWithTasks } from '../utils/dbQueries.js'
 import {
     UserNotAvailable,

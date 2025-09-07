@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { Controller as BoardController } from '../controllers/BoardController.js'
-import { SQLModel } from "@Types/global";
+import { SQLModel } from "@CustomTypes/db";
 import { Authorization } from "../middleware/authorization.js";
 import { boardAuthorization } from "src/middleware/boardAuthorization.js";
 

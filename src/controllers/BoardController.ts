@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import bycrypt from 'bcrypt'
-import { SQLModel } from "@Types/global";
+import { SQLModel } from "@CustomTypes/db"
 import { ROUND_SALT } from "../config.js";
 import { ACCESS_TOKEN_EXP, REFRESH_TOKEN_EXP } from "../config.js";
 import { parseUser } from "../utils/parseCredentials.js";

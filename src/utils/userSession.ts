@@ -1,4 +1,4 @@
-import { Session } from '@Types/db'
+import { Session } from '@CustomTypes/db'
 import { createConnection } from 'mysql2/promise'
 import { DB_CONFIG } from 'src/config.js'
 

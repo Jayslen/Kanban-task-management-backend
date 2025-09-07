@@ -5,8 +5,7 @@
     "baseUrl": ".",
     "noEmitOnError": true,
     "paths": {
-      "@Types/global": ["src/types/global.ts"],
-      "@Types/db": ["src/types/db.ts"],
+      "@CustomTypes/*": ["src/types/*.d.ts"],
     }
      },
   "include": ["src/**/*"],

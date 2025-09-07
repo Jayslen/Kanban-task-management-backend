@@ -1,5 +1,5 @@
 import { Response } from 'express'
-import { ResponseError } from '@Types/global'
+import { ResponseError } from '@CustomTypes/errors'
 
 export class UserNotAvailable extends Error implements ResponseError {
     public statusCode: number

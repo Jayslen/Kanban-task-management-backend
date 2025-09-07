@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken'
 import { TOKEN_SECRET_KEY } from '../config.js'
-import { Payload, VerifyResult } from '@Types/global'
+import { Payload, VerifyResult } from '@CustomTypes/auth'
 
-export function createJWT(input: { data: any, expiresIn: any }) {
+export function createJWT(input: { data: object, expiresIn: any }) {
     const { data, expiresIn = "1m" } = input
 
     return jwt.sign(data, TOKEN_SECRET_KEY, { expiresIn: expiresIn })

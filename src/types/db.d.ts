@@ -1,4 +1,8 @@
 import { RowDataPacket } from 'mysql2/promise'
+import { MySqlModel } from '../models/mysqlModel.ts'
+
+export type SQLModel = typeof MySqlModel
+
 
 export interface UserName extends RowDataPacket {
     username: string

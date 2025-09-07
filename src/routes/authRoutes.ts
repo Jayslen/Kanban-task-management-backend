@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { SQLModel } from '@Types/global'
+import { SQLModel } from '@CustomTypes/db'
 import { Controller as BoardController } from '../controllers/BoardController.js';
 
 export async function createAuthRoutes(Model: SQLModel): Promise<Router> {
