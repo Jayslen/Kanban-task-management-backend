@@ -1,6 +1,6 @@
 import { Session } from '@CustomTypes/db'
 import { createConnection } from 'mysql2/promise'
-import { DB_CONFIG } from 'src/config.js'
+import { DB_CONFIG } from '../config.js'
 
 export async function isUserSession(sessionId: string) {
     const db = await createConnection(DB_CONFIG)

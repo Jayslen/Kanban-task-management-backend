@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
+    "server": "node ./dist/app.js",
     "dev": "npx tsx --watch ./src/app.ts"
   },
   "keywords": [],

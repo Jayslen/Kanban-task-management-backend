@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import { throwResponseError, UnauthorizedUser } from '../schema/Errors.js'
 import { createJWT, verifyToken } from '../utils/JWT.js'
-import { isUserSession } from 'src/utils/userSession.js'
-import { ACCESS_TOKEN_EXP } from 'src/config.js'
+import { isUserSession } from '../utils/userSession.js'
+import { ACCESS_TOKEN_EXP } from '../config.js'
 
 export async function Authorization(
     req: Request,
