@@ -13,8 +13,8 @@ const boardRoutes = await createBoardRouter(MySqlModel)
 app.use(json())
 app.use(CookieParser())
 
-app.use(authRoutes)
 app.use('/board', boardRoutes)
+app.use(authRoutes)
 
 app.listen(SERVER_PORT, () => {
     console.log(`Server is running at http://localhost:${SERVER_PORT}`);

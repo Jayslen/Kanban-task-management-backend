@@ -50,14 +50,23 @@ export class ValidationError extends Error implements ResponseError {
     public statusCode: number
     public errors?: [string, unknown][]
     constructor(statusCode: number, errors: [string, unknown][]) {
-        super("The data send is not well strtucture. Try again")
+        super("The data sent is not valid")
         this.name = "ValidationError"
         this.statusCode = statusCode
         this.errors = errors
     }
 }
 
-const customErrors = [UserNotFound, UserNotAvailable, WrongUserPassword, UnauthorizedUser, BoardNotFound, ValidationError]
+export class SessionActive extends Error implements ResponseError {
+    public statusCode: number
+    constructor(message = "There is already an active session") {
+        super(message)
+        this.name = "SessionActive"
+        this.statusCode = 403
+    }
+}
+
+const customErrors = [UserNotFound, UserNotAvailable, WrongUserPassword, UnauthorizedUser, BoardNotFound, ValidationError, SessionActive]
 
 export function throwResponseError(input: { res: Response, error: unknown }) {
     const { error, res } = input
