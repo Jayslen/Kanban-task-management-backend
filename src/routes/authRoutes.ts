@@ -7,10 +7,10 @@ export async function createAuthRoutes(Model: SQLModel): Promise<Router> {
     const Controller = new BoardController(Model)
     const router = Router();
 
-    router.use(denieAuthRoutes)
+    // router.use()
 
-    router.post('/register', Controller.register)
-    router.post('/login', Controller.login)
+    router.post('/register', denieAuthRoutes, Controller.register)
+    router.post('/login', denieAuthRoutes, Controller.login)
 
     return router;
 } 
