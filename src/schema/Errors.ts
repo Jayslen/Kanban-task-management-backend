@@ -50,7 +50,7 @@ export class ValidationError extends Error implements ResponseError {
     public statusCode: number
     public errors?: [string, unknown][]
     constructor(statusCode: number, errors: [string, unknown][]) {
-        super("The data sent is not valid")
+        super("The input data is not valid")
         this.name = "ValidationError"
         this.statusCode = statusCode
         this.errors = errors

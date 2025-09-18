@@ -46,7 +46,7 @@ export class Controller {
                 httpOnly: true
             })
 
-            res.sendStatus(200)
+            res.status(200).json({ username: data.username })
 
         } catch (Error) {
             throwResponseError({ error: Error as Error, res })

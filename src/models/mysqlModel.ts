@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt'
 import { UserParams } from '@CustomTypes/user'
 import { BoardBasicInfoDTO, BoardTask, Column } from '@CustomTypes/board'
 import { UserName, UUID, UserCredentials, BoardBasicInfoDB, TaskDB, SubtasksDb, ColumnsDB, BoardWithColumnsDB, ColumnsWithTasks } from '@CustomTypes/db'
-import { getBoardBasicInfo, getBoardBasicInfoByOwner, getBoardWithColumns, getColumns, getColumnsWithTasks } from '../utils/dbQueries.js'
+import { getBoardBasicInfo, getBoardBasicInfoByOwner, getBoardWithColumns, getColumn, getColumns, getColumnsWithTasks } from '../utils/dbQueries.js'
 import {
     UserNotAvailable,
     UserNotFound,
@@ -141,7 +141,7 @@ export class MySqlModel {
 
         const [[taskCreated]] = await db.query<TaskDB[]>('SELECT BIN_TO_UUID(task_id) AS id, name, description FROM tasks WHERE task_id = UUID_TO_BIN(?)', [newTaskId])
         const [subtaskResults] = await db.query<SubtasksDb[]>('SELECT subtask_id AS id, name, isComplete FROM subtasks WHERE BIN_TO_UUID(task) = ?', [newTaskId])
-        const [[taskStatus]] = await db.query<ColumnsDB[]>(getColumns, [status])
+        const [[taskStatus]] = await db.query<ColumnsDB[]>(getColumn, [status])
 
         return {
             ...taskCreated, status: taskStatus.name, subtasks: subtaskResults.map(task => ({ ...task, isComplete: Boolean(task.isComplete) }))
@@ -208,13 +208,13 @@ export class MySqlModel {
         const columns = rows.reduce<Column[]>((acc, row) => {
             let column = acc.find(col => col.id === row.columnId);
             if (!column) {
-                column = { id: row.column_id, name: row.column_name, tasks: [] };
+                column = { id: row.columnId, name: row.column_name, tasks: [] };
                 acc.push(column);
             }
 
             if (row.task_id) {
                 let task = column.tasks.find(t => t.id === row.task_id);
-                if (task) {
+                if (!task) {
                     task = {
                         id: row.task_id,
                         name: row.task_name,
@@ -223,15 +223,15 @@ export class MySqlModel {
                         subtasks: []
                     };
                     column.tasks.push(task);
+                }
 
-                    if (row.subtask_id) {
-                        task.subtasks.push({
-                            id: row.subtask_id,
-                            name: row.subtask_name,
-                            isComplete: !!row.subtask_isComplete,
-                            task_id: row.task_id
-                        });
-                    }
+                if (row.subtask_id) {
+                    task.subtasks.push({
+                        id: row.subtask_id,
+                        name: row.subtask_name,
+                        isComplete: !!row.subtask_isComplete,
+                        task_id: row.task_id
+                    });
                 }
             }
 
