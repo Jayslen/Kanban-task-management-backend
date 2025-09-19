@@ -287,11 +287,7 @@ Create a new board.
 {
   "board_id": "uuid",
   "name": "Project Roadmap",
-  "columns": [
-    { "id": 1, "name": "To Do" },
-    { "id": 2, "name": "In Progress" },
-    { "id": 3, "name": "Done" }
-  ]
+  "createdAt": "Date"
 }
 
 ```
