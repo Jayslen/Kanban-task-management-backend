@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt'
 import { UserParams } from '@CustomTypes/user'
 import { BoardBasicInfoDTO, BoardTask, Column } from '@CustomTypes/board'
 import { UserName, UUID, UserCredentials, BoardBasicInfoDB, TaskDB, SubtasksDb, ColumnsDB, BoardWithColumnsDB, ColumnsWithTasks } from '@CustomTypes/db'
-import { getBoardBasicInfo, getBoardBasicInfoByOwner, getBoardWithColumns, getColumn, getColumns, getColumnsWithTasks } from '../utils/dbQueries.js'
+import { getBoardBasicInfo, getBoardBasicInfoByOwner, getBoardWithColumns, getColumn, getColumnsWithTasks } from '../utils/dbQueries.js'
 import {
     UserNotAvailable,
     UserNotFound,
@@ -77,9 +77,8 @@ export class MySqlModel {
         await db.query(columnsQuery, columnsParams);
 
         const [[newBoard]] = await db.query<BoardBasicInfoDB[]>(getBoardBasicInfo, [uuid])
-        const [boardColumns] = await db.query(getColumns, [uuid])
 
-        return { ...newBoard, columns: boardColumns }
+        return { ...newBoard }
     }
 
     static updateBoard = async (input: {
