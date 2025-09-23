@@ -354,7 +354,7 @@ No body returned.
 - `404 Not Found` – Board not found.
 - `500 Internal Server Error`
 
-### **POST** `/boards/:boardId/task`
+### **POST** `/board/:boardId/task`
 
 Create a task in a board.
 
@@ -395,7 +395,7 @@ Create a task in a board.
 - `404 Not Found` – Board not found.
 - `500 Internal Server Error`
 
-### **PATCH** `/boards/:boardId/task/:taskId`
+### **PATCH** `/board/:boardId/task/:taskId`
 
 Update a task.
 
@@ -433,7 +433,7 @@ No body returned.
 
 ---
 
-### **DELETE** `/boards/:boardId/task/:taskId`
+### **DELETE** `/board/:boardId/task/:taskId`
 
 Delete a task.
 
@@ -473,7 +473,7 @@ Get all boards for the logged-in user.
 
 ---
 
-### **GET** `/boards/:boardId`
+### **GET** `/board/:boardId`
 
 Get a board with columns, tasks, and subtasks.
 
