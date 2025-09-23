@@ -143,7 +143,7 @@ export class MySqlModel {
         const [[taskStatus]] = await db.query<ColumnsDB[]>(getColumn, [status])
 
         return {
-            ...taskCreated, status: taskStatus.name, subtasks: subtaskResults.map(task => ({ ...task, isComplete: Boolean(task.isComplete) }))
+            ...taskCreated, column_id: taskStatus.id, subtasks: subtaskResults.map(task => ({ ...task, isComplete: Boolean(task.isComplete), task_id: newTaskId }))
         }
     }
 
