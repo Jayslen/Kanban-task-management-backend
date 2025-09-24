@@ -158,13 +158,17 @@ export class MySqlModel {
             tasktoUpdate: { name: string, id: number }[],
             tasktoAdd: string[]
         }) => {
-        const { boardId, taskId, name, description, tasktoAdd, tasktoDelete, tasktoUpdate } = input
+        const { boardId, taskId, name, description, status, tasktoAdd, tasktoDelete, tasktoUpdate } = input
 
         if (name) {
             await db.query('UPDATE tasks SET name = ? WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?', [name, taskId, boardId])
         }
         if (description) {
             await db.query('UPDATE tasks SET description = ? WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?', [description, taskId, boardId])
+        }
+
+        if (status) {
+            await db.query('UPDATE tasks SET column_id = ? WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?', [status, taskId, boardId])
         }
 
         if (tasktoDelete.length > 0) {
