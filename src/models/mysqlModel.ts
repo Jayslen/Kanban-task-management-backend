@@ -175,7 +175,6 @@ export class MySqlModel {
             await db.query(`DELETE FROM subtasks WHERE subtask_id IN (${tasktoDelete.join(',')}) AND BIN_TO_UUID(task) = ?`, [taskId])
         }
 
-
         if (tasktoUpdate.length > 0) {
             const whenStatements = tasktoUpdate.map(({ id, name }) => `WHEN ${id} THEN "${name}"`).join(' ')
             const ids = tasktoUpdate.map(task => task.id).join(',')

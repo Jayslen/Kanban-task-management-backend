@@ -68,14 +68,14 @@ Error Response Format:
 
 ### ValidationError Details:
 
-When a validation error occurs, an additional field `errors` is returned:
+When a validation error occurs, an additional field `cause` is returned:
 
 ```json
 {
   "errorName": "ValidationError",
   "message": "The data sent is not well structured. Try again",
   "code": 400,
-  "errors": [
+  "cause": [
     ["username", "Must be at least 4 characters"],
     ["password", "Must not exceed 50 characters"]
   ]
