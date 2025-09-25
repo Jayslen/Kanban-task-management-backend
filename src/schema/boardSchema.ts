@@ -32,6 +32,11 @@ export const updateBoardTaskSchema = z.object({
     status: z.number().optional()
 })
 
+export const updateSubtaskStatusSchema = z.object({
+    subtaskId: z.number(),
+    isCompleted: z.boolean()
+})
+
 export function validateBoardSchema(input: unknown) {
     return boardSchema.safeParse(input)
 }
@@ -46,4 +51,8 @@ export function validateTaskBoard(input: unknown) {
 
 export function validateBoardTaskUpdateSchema(input: unknown) {
     return updateBoardTaskSchema.safeParse(input)
+}
+
+export function validateSubtaskStatusSchema(input: unknown) {
+    return updateSubtaskStatusSchema.safeParse(input)
 }

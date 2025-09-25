@@ -188,6 +188,11 @@ export class MySqlModel {
         }
     }
 
+    static updateSubtaskStatus = async (input: { taskId: string, subtaskId: number, isCompleted: boolean }) => {
+        const { taskId, subtaskId, isCompleted } = input
+        await db.query('UPDATE subtasks SET isComplete = ? WHERE subtask_id = ? AND BIN_TO_UUID(task) = ?', [isCompleted, subtaskId, taskId])
+    }
+
     static deleteTask = async (input: { boardId: string, taskId: string }) => {
         const { boardId, taskId } = input
         await db.query('DELETE FROM tasks WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?', [taskId, boardId])

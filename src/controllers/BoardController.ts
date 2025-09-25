@@ -6,7 +6,7 @@ import { ACCESS_TOKEN_EXP, REFRESH_TOKEN_EXP } from "../config.js";
 import { parseUser } from "../utils/parseCredentials.js";
 import { createJWT } from "../utils/JWT.js";
 import { throwResponseError, ValidationError } from "../schema/Errors.js";
-import { validateBoardColumnsSchema, validateBoardSchema, validateBoardTaskUpdateSchema, validateTaskBoard } from "../schema/boardSchema.js";
+import { validateBoardColumnsSchema, validateBoardSchema, validateBoardTaskUpdateSchema, validateSubtaskStatusSchema, validateTaskBoard } from "../schema/boardSchema.js";
 import { formatZodError } from "../utils/zodError.js";
 
 export class Controller {
@@ -92,6 +92,20 @@ export class Controller {
             const updatedBoard = await this.BoardModel.updateBoard({ colsToRemove, colsToUpdate, colsToAdd: newCols, name, boardId })
 
             res.status(200).json(updatedBoard)
+        } catch (error) {
+            throwResponseError({ error, res })
+        }
+    }
+
+    updateSubtaskStatus = async (req: Request, res: Response) => {
+        const { taskId } = req.params
+        const { subtaskId, isCompleted } = req.body
+
+        try {
+            const { success, data, error } = validateSubtaskStatusSchema({ subtaskId, isCompleted })
+            if (!success) throw new ValidationError(400, formatZodError(error))
+            await this.BoardModel.updateSubtaskStatus({ subtaskId: data.subtaskId, isCompleted: data.isCompleted, taskId })
+            res.sendStatus(200)
         } catch (error) {
             throwResponseError({ error, res })
         }
