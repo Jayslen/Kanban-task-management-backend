@@ -1,5 +1,5 @@
 const dbQueries = {
-    getColumn: 'SELECT column_id AS id, name FROM board_columns WHERE column_id = ?',
+    getColumn: 'SELECT AS id, name FROM board_columns WHERE column_id = ?',
     getColumns: 'SELECT column_id AS id, name FROM board_columns WHERE BIN_TO_UUID(board) = ?',
     getBoardName: 'SELECT name FROM boards WHERE BIN_TO_UUID(board_id) = ?',
     getBoardBasicInfo: 'SELECT BIN_TO_UUID(board_id) AS boardId, name, timestamp as createdAt FROM boards WHERE BIN_TO_UUID(board_id) = ?',

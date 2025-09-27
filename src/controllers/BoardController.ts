@@ -164,7 +164,7 @@ export class Controller {
                 }
             ) : { toAdd: [], toDelete: [], toUpdate: [] }
 
-            this.BoardModel.updateTask({
+            const updatedTask = await this.BoardModel.updateTask({
                 boardId,
                 taskId,
                 name: taskFields.name,
@@ -175,7 +175,7 @@ export class Controller {
                 tasktoUpdate: toUpdate
             })
 
-            res.sendStatus(200)
+            res.status(200).json({ ...updatedTask })
         } catch (error) {
             throwResponseError({ error, res })
         }

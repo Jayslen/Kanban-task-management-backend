@@ -96,7 +96,7 @@ export class MySqlModel {
 
 
         if (colsToRemove.length > 0) {
-            await db.query(`DELETE FROM columns WHERE column_id IN (${colsToRemove.map(col => col.id).join(',')})`)
+            await db.query(`DELETE FROM board_columns WHERE column_id IN (${colsToRemove.map(col => col.id).join(',')})`)
         }
 
         if (colsToUpdate.length > 0) {
@@ -186,6 +186,11 @@ export class MySqlModel {
             const subtasksValues = tasktoAdd.map(name => `(UUID_TO_BIN('${taskId}'),'${name}')`).join(',')
             await db.query(`INSERT INTO subtasks (task, name) VALUES ${subtasksValues}`)
         }
+
+        const [[updatedTask]] = await db.query<TaskDB[]>('SELECT BIN_TO_UUID(task_id) AS id, name, description, column_id FROM tasks WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?', [taskId, boardId])
+        const [subtasks] = await db.query<SubtasksDb[]>('SELECT subtask_id AS id, name, isComplete FROM subtasks WHERE BIN_TO_UUID(task) = ?', [taskId])
+
+        return { ...updatedTask, subtasks: subtasks.map(task => ({ ...task, isComplete: Boolean(task.isComplete), task_id: taskId })) }
     }
 
     static updateSubtaskStatus = async (input: { taskId: string, subtaskId: number, isCompleted: boolean }) => {
