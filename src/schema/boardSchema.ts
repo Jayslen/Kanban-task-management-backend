@@ -15,7 +15,7 @@ export const updateColumnsBoardSchema = z.object({
             name: z.string().min(4).max(25).optional() // < ---- check this line, i think is not being used
         })).optional().default([]),
         add: z.array(z.string().min(4).max(25)).optional().default([])
-    })
+    }).optional().default({ add: [], edit: [] })
 })
 
 export const taskBoardSchema = z.object({

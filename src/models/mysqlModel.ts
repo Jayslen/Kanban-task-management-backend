@@ -115,7 +115,7 @@ export class MySqlModel {
 
         const boardName = boardWithCols[0].name
         const columns = boardWithCols.map(col => ({ id: col.column_id, name: col.columnName }))
-        return { board: boardName, columns }
+        return { boardId, name: boardName, columns }
     }
 
     static deleteBoard = async (boardId: string) => {
