@@ -1,6 +1,7 @@
 # About Project
 
-This is the backend for the challenge https://www.frontendmentor.io/challenges/kanban-task-management-web-app-wgQLt-HlbB. The project is based on build a Kaban Task Management Web APP. This repo contains the REST API buil with node, express and typescript for the project that will be use for the frontend.
+This is the backend for the challenge https://www.frontendmentor.io/challenges/kanban-task-management-web-app-wgQLt-HlbB. The project is based on build a Kaban Task Management Web APP. 
+This repo contains the REST API buil with node, express and typescript for the project that will be use for the frontend. The data retrive by the API is store in a MySQL database.
 
 - Stack and dependencies uses:
     - Typescript
