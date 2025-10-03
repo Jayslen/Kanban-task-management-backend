@@ -1,4 +1,4 @@
-## About Project
+# About Project
 
 This is the backend for the challenge https://www.frontendmentor.io/challenges/kanban-task-management-web-app-wgQLt-HlbB. The project is based on build a Kaban Task Management Web APP. This repo contains the REST API buil with node, express and typescript for the project that will be use for the frontend.
 
@@ -39,13 +39,13 @@ npm run build
 npm run server
 ```
 
-## Endpoints documentation.
+# Endpoints documentation.
 
-### Errors catalog
+## Errors catalog
 
 The api uses consistent error objects that extend the built-in `Error` class and implement `ResponseError` and are return as a response if the an error occured with the following structure:
 
-Error Response Format:
+**Error Response Format**:
 
 ```json
 {
@@ -57,7 +57,7 @@ Error Response Format:
 
 ```
 
-| Error Class | `errorName` | Default Message | Status Code |
+| Error Class | errorName | Default Message | Status Code |
 | --- | --- | --- | --- |
 | `UserNotAvailable` | `UsernameTaken` | The username is already taken | `400` |
 | `UserNotFound` | `UserNotFound` | No user exists with the username given | `404` |
@@ -88,9 +88,9 @@ The API uses [**Zod**](https://github.com/colinhacks/zod) for request validation
 
 Below are the schemas and their validation rules.
 
-## User Schema
+### User Schema
 
-### `userSchema`
+`userSchema`
 
 ```tsx
 {
@@ -108,9 +108,8 @@ Below are the schemas and their validation rules.
 
 ---
 
-## Board Schemas
-
-### `boardSchema`
+### Board Schemas
+`boardSchema`
 
 ```tsx
 {
@@ -127,8 +126,8 @@ Below are the schemas and their validation rules.
 🔎 **Used in**: Board creation.
 
 ---
-
-### `updateColumnsBoardSchema`
+### Update board schema
+`updateColumnsBoardSchema`
 
 ```tsx
 {
@@ -158,9 +157,9 @@ Below are the schemas and their validation rules.
 
 ---
 
-## Task Schemas
+### Task Schemas
 
-### `taskBoardSchema`
+`taskBoardSchema`
 
 ```tsx
 {
@@ -181,8 +180,8 @@ Below are the schemas and their validation rules.
 🔎 **Used in**: Creating tasks.
 
 ---
-
-### `updateBoardTaskSchema`
+### Update task Schemas
+`updateBoardTaskSchema`
 
 ```tsx
 {
@@ -206,13 +205,17 @@ Below are the schemas and their validation rules.
 
 🔎 **Used in**: Updating tasks.
 
+
+# API Reference
+
 ## Authentication Routes
 
-### **POST** `/auth/register`
+### Registers a new user.
+Register a new user with a unique username and password.
 
-Registers a new user.
+#### Endpoint: `POST /auth/register`
 
-### Request Body
+#### Request Body
 
 ```json
 {
@@ -222,23 +225,25 @@ Registers a new user.
 
 ```
 
-### ✅ Success Response
+#### ✅ Success Response
 
 - **Code:** `201 Created`
 
 No body returned.
 
-### ❌ Error Responses
+#### ❌ Error Responses
 
 - `400 Bad Request` – Invalid input (username or password doesn’t meet requirements).
 - `409 Conflict` – Username already exists.
 - `500 Internal Server Error`
 
-### **POST** `/auth/login`
 
-Logs in an existing user.
+### Log in an existing user.
+Log in with username and password to receive JWT tokens in HttpOnly cookies.
 
-### Request Body
+#### Endpoint: `POST /auth/login`
+
+#### Request Body
 
 ```json
 {
@@ -248,7 +253,7 @@ Logs in an existing user.
 
 ```
 
-### ✅ Success Response
+#### ✅ Success Response
 
 - **Code:** `200 OK`
 - **Set-Cookie Headers:**
@@ -257,7 +262,7 @@ Logs in an existing user.
 
 No body returned.
 
-### ❌ Error Responses
+#### ❌ Error Responses
 
 - `400 Bad Request` – Invalid input.
 - `401 Unauthorized` – Wrong username or password.
@@ -265,11 +270,12 @@ No body returned.
 
 ## Board Routes (Protected with JWT)
 
-### **POST** `/boards/`
+### Create a new board.
+Create a new board with a name and initial columns.
 
-Create a new board.
+#### Endpoint: `POST /board`
 
-### Request Body
+#### Request Body
 
 ```json
 {
@@ -279,7 +285,7 @@ Create a new board.
 
 ```
 
-### ✅ Success Response
+#### ✅ Success Response
 
 - **Code:** `201 Created`
 
@@ -292,33 +298,35 @@ Create a new board.
 
 ```
 
-### ❌ Error Responses
+#### ❌ Error Responses
 
 - `400 Bad Request` – Validation failed.
 - `403 Forbidden` – User not authenticated.
 - `500 Internal Server Error`
 
-### **PATCH** `/boards/:boardId`
+### Update a board.
+Update a board's name and columns.
+#### Endpoint: `PATCH /boards/:boardId`
 
-Update a board’s name and/or columns.
-
-### Request Body
+#### Request Body
 
 ```json
 {
   "name": "Updated Project",
-  "columns": {
-    "edit": [
-      { "id": 1, "payload": "Backlog" },
-      { "id": 2, "remove": true }
-    ],
-    "add": ["QA Review"]
+  "columns": [
+    {"id": "uuid"},
+    {"id": "uuid", "name": "Drop"},
+    {"name": "QA Review"},
+  ]
   }
-}
 
 ```
+- `columns` array rules:
+  - `id + no name` → delete subtask
+  - `id + name` → update subtask
+  - `no id + name` → add subtask
 
-### ✅ Success Response
+#### ✅ Success Response
 
 - **Code:** `200 OK`
 
@@ -333,44 +341,46 @@ Update a board’s name and/or columns.
 
 ```
 
-### ❌ Error Responses
+#### ❌ Error Responses
 
 - `400 Bad Request` – Validation error.
 - `404 Not Found` – Board not found.
 - `500 Internal Server Error`
 
-### **DELETE** `/boards/:boardId`
 
-Delete a board.
+### Delete a board.
+Delete a board by its ID.
+#### Endpoint: `DELETE /board/:boardId`
 
-### ✅ Success Response
+#### ✅ Success Response
 
 - **Code:** `200 OK`
 
 No body returned.
 
-### ❌ Error Responses
+#### ❌ Error Responses
 
 - `404 Not Found` – Board not found.
 - `500 Internal Server Error`
 
-### **POST** `/board/:boardId/task`
 
-Create a task in a board.
+### Create a task in a board.
+Create a new task in a specific board column.
+#### Endpoint: `POST /board/:boardId/task`
 
-### Request Body
+#### Request Body
 
 ```json
 {
   "name": "Implement login",
   "description": "Set up JWT authentication",
   "subtasks": ["Design DB schema", "Write controller", "Test endpoints"],
-  "status": 1
+  "status": "uuid of column" // e.g. "To Do" column ID
 }
 
 ```
 
-### ✅ Success Response
+#### ✅ Success Response
 
 - **Code:** `201 Created`
 
@@ -381,23 +391,24 @@ Create a task in a board.
   "description": "Set up JWT authentication",
   "status": "To Do",
   "subtasks": [
-    { "id": 10, "name": "Design DB schema", "isComplete": false },
-    { "id": 11, "name": "Write controller", "isComplete": false },
-    { "id": 12, "name": "Test endpoints", "isComplete": false }
+    { "id": "uuid", "name": "Design DB schema", "isComplete": false },
+    { "id": "uuid", "name": "Write controller", "isComplete": false },
+    { "id": "uuid", "name": "Test endpoints", "isComplete": false }
   ]
 }
 
 ```
 
-### ❌ Error Responses
+#### ❌ Error Responses
 
 - `400 Bad Request` – Validation failed.
 - `404 Not Found` – Board not found.
 - `500 Internal Server Error`
 
-### **PATCH** `/board/:boardId/task/:taskId`
 
-Update a task.
+### Update a task in a board.
+Update a task's details, status, and subtasks.
+#### Enpoint `PATCH /board/:boardId/task/:taskId`
 
 ### Request Body
 
@@ -405,10 +416,10 @@ Update a task.
 {
   "name": "Implement login + refresh",
   "description": "JWT auth with refresh tokens",
-  "status": 2,
+  "status": "uuid of column", // e.g. "In Progress" column ID
   "subtasks": [
-    { "id": 10, "name": "Design DB schema v2" },
-    { "id": 11 },
+    { "id": "uuid", "name": "Design DB schema v2" },
+    { "id": "uuid" },
     { "name": "Write integration tests" }
   ]
 }
@@ -419,13 +430,13 @@ Update a task.
 - `id + name` → update subtask
 - `no id + name` → add subtask
 
-### ✅ Success Response
+#### ✅ Success Response
 
 - **Code:** `200 OK`
 
 No body returned.
 
-### ❌ Error Responses
+#### ❌ Error Responses
 
 - `400 Bad Request` – Validation failed.
 - `404 Not Found` – Task not found.
@@ -433,28 +444,29 @@ No body returned.
 
 ---
 
-### **DELETE** `/board/:boardId/task/:taskId`
+### Delete a task.
+Delete a task by its ID.
+#### Endpoint: `DELETE /board/:boardId/task/:taskId`
 
-Delete a task.
-
-### ✅ Success Response
+#### ✅ Success Response
 
 - **Code:** `200 OK`
 
 No body returned.
 
-### ❌ Error Responses
+#### ❌ Error Responses
 
 - `404 Not Found` – Task not found.
 - `500 Internal Server Error`
 
 ---
 
-### **GET** `/boards/`
+### Get all boards for the logged-in user.
+Get a list of all boards belonging to the authenticated user.
+#### Endpoint: `GET /boards/`
 
-Get all boards for the logged-in user.
 
-### ✅ Success Response
+#### ✅ Success Response
 
 - **Code:** `200 OK`
 
@@ -466,18 +478,19 @@ Get all boards for the logged-in user.
 
 ```
 
-### ❌ Error Responses
+#### ❌ Error Responses
 
 - `403 Forbidden` – User not authenticated.
 - `500 Internal Server Error`
 
 ---
 
-### **GET** `/board/:boardId`
+### Get a board with columns, tasks, and subtasks.
+Get detailed info about a specific board, including its columns, tasks, and subtasks.
+#### `GET /board/:boardId`
 
-Get a board with columns, tasks, and subtasks.
 
-### ✅ Success Response
+#### ✅ Success Response
 
 - **Code:** `200 OK`
 
@@ -487,15 +500,15 @@ Get a board with columns, tasks, and subtasks.
   "name": "Project Roadmap",
   "columns": [
     {
-      "id": 1,
+      "id": "uuid",
       "name": "To Do",
       "tasks": [
         {
-          "id": "taskUuid",
+          "id": "uuid",
           "name": "Implement login",
           "description": "Set up JWT authentication",
           "subtasks": [
-            { "id": 10, "name": "Design DB schema", "isComplete": false }
+            { "id": "uuid", "name": "Design DB schema", "isComplete": false }
           ]
         }
       ]
@@ -505,7 +518,7 @@ Get a board with columns, tasks, and subtasks.
 
 ```
 
-### ❌ Error Responses
+#### ❌ Error Responses
 
 - `404 Not Found` – Board not found.
 - `500 Internal Server Error`
