@@ -8,6 +8,7 @@ import { createJWT } from "../utils/JWT.js";
 import { throwResponseError, ValidationError } from "../schema/Errors.js";
 import { validateBoardColumnsSchema, validateBoardSchema, validateBoardTaskUpdateSchema, validateSubtaskStatusSchema, validateTaskBoard } from "../schema/boardSchema.js";
 import { formatZodError } from "../utils/zodError.js";
+import { parseColumns } from '../utils/columnsParser.js'
 
 export class Controller {
     private BoardModel;
@@ -80,16 +81,11 @@ export class Controller {
 
             if (!success) throw new ValidationError(400, formatZodError(error))
 
-            const { columns: { add: newCols, edit: existCols }, name } = data
+            const { columns = [], name } = data
 
-            const colsToRemove = existCols?.filter(col => col.remove).map(({ id, remove }) => ({ id, remove: !!remove }))
+            const { toAdd, toDelete, toUpdate } = parseColumns(columns)
 
-            const colsToUpdate = existCols
-                ?.filter((col): col is { id: number, payload: string } => col.payload !== undefined)
-                ?.map(({ id, payload }) => ({ id, payload: payload }))
-
-
-            const updatedBoard = await this.BoardModel.updateBoard({ colsToRemove, colsToUpdate, colsToAdd: newCols, name, boardId })
+            const updatedBoard = await this.BoardModel.updateBoard({ colsToRemove: toDelete, colsToUpdate: toUpdate, colsToAdd: toAdd, name, boardId })
 
             res.status(200).json(updatedBoard)
         } catch (error) {
@@ -146,23 +142,7 @@ export class Controller {
 
             if (error) throw new ValidationError(400, formatZodError(error))
 
-            const { toAdd, toDelete, toUpdate } = taskFields.subtasks ? taskFields.subtasks.reduce(
-                (acc, task) => {
-                    if (task.id !== undefined && task.name === undefined) {
-                        acc.toDelete.push(task.id);
-                    } else if (task.id === undefined && task.name !== undefined) {
-                        acc.toAdd.push(task.name);
-                    } else if (task.id !== undefined && task.name !== undefined) {
-                        acc.toUpdate.push({ id: task.id, name: task.name });
-                    }
-                    return acc;
-                },
-                {
-                    toAdd: [] as string[],
-                    toDelete: [] as number[],
-                    toUpdate: [] as { id: number; name: string }[],
-                }
-            ) : { toAdd: [], toDelete: [], toUpdate: [] }
+            const { toAdd, toDelete, toUpdate } = parseColumns(taskFields.subtasks || [])
 
             const updatedTask = await this.BoardModel.updateTask({
                 boardId,

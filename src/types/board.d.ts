@@ -5,7 +5,7 @@ export type BoardBasicInfoDTO = z.infer<typeof boardSchema>;
 export type BoardTask = z.infer<typeof taskBoardSchema>;
 
 export type Subtask = {
-    id: number;
+    id: string;
     name: string;
     isComplete: boolean;
     task_id: string;
@@ -15,12 +15,12 @@ export type Task = {
     id: string;
     name: string | null;
     description: string | null;
-    column_id: number | null;
+    column_id: string | null;
     subtasks: Subtask[];
 };
 
 export type Column = {
-    id: number;
+    id: string;
     name: string;
     tasks: Task[];
 };

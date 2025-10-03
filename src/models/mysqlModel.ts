@@ -82,9 +82,9 @@ export class MySqlModel {
     }
 
     static updateBoard = async (input: {
-        colsToUpdate: { id: number, payload: string }[]
-        colsToRemove: { id: number, remove: boolean }[]
-        colsToAdd: string[]
+        colsToUpdate: { id: string, name: string }[]
+        colsToRemove: { id: string }[]
+        colsToAdd: { name: string }[]
         name: string
         boardId: string
     }) => {
@@ -96,24 +96,26 @@ export class MySqlModel {
 
 
         if (colsToRemove.length > 0) {
-            await db.query(`DELETE FROM board_columns WHERE column_id IN (${colsToRemove.map(col => col.id).join(',')})`)
+            console.log(colsToRemove.map(col => `'${col.id}'`).join(','))
+            await db.query(`DELETE FROM board_columns WHERE BIN_TO_UUID(column_id) IN (${colsToRemove.map(col => `'${col.id}'`).join(',')})`)
         }
 
         if (colsToUpdate.length > 0) {
-            const whenStatements = colsToUpdate.map(({ id, payload }) => `WHEN ${id} THEN "${payload}"`).join(' ')
-            const ids = colsToUpdate.map(col => col.id).join(',')
-            const query = `UPDATE board_columns SET name = CASE column_id ${whenStatements} END WHERE column_id IN (${ids}) AND BIN_TO_UUID(board) = ?`
+            const whenStatements = colsToUpdate.map(({ id, name }) => `WHEN '${id}' THEN "${name}"`).join(' ')
+            const ids = colsToUpdate.map(col => `'${col.id}'`).join(',');
+
+            const query = `UPDATE board_columns SET name = CASE BIN_TO_UUID(column_id) ${whenStatements} END WHERE BIN_TO_UUID(column_id) IN (${ids}) AND BIN_TO_UUID(board) = ?`
             await db.query(query, [boardId])
         }
 
         if (colsToAdd.length > 0) {
-            const params = colsToAdd.map(col => `("${col}", UUID_TO_BIN("${boardId}"))`).join(', ')
+            const params = colsToAdd.map(col => `("${col.name}", UUID_TO_BIN("${boardId}"))`).join(', ')
             await db.query(`INSERT INTO board_columns (name, board) VALUES ${params}`, [...colsToAdd])
         }
 
         const [boardWithCols] = await db.query<BoardWithColumnsDB[]>(getBoardWithColumns, [boardId])
 
-        const boardName = boardWithCols[0].name
+        const boardName = boardWithCols[0]?.name
         const columns = boardWithCols.map(col => ({ id: col.column_id, name: col.columnName }))
         return { boardId, name: boardName, columns }
     }
@@ -129,7 +131,7 @@ export class MySqlModel {
 
         await db.query(`
             INSERT INTO tasks (task_id,board_id,name,description,column_id)
-            VALUES (UUID_TO_BIN(?),UUID_TO_BIN(?),?,?,?)`,
+            VALUES (UUID_TO_BIN(?),UUID_TO_BIN(?),?,?,UUID_TO_BIN(?))`,
             [newTaskId, boardId, name, description, status])
 
 
@@ -139,7 +141,7 @@ export class MySqlModel {
         }
 
         const [[taskCreated]] = await db.query<TaskDB[]>('SELECT BIN_TO_UUID(task_id) AS id, name, description FROM tasks WHERE task_id = UUID_TO_BIN(?)', [newTaskId])
-        const [subtaskResults] = await db.query<SubtasksDb[]>('SELECT subtask_id AS id, name, isComplete FROM subtasks WHERE BIN_TO_UUID(task) = ?', [newTaskId])
+        const [subtaskResults] = await db.query<SubtasksDb[]>('SELECT BIN_TO_UUID(subtask_id) AS id, name, isComplete FROM subtasks WHERE BIN_TO_UUID(task) = ?', [newTaskId])
         const [[taskStatus]] = await db.query<ColumnsDB[]>(getColumn, [status])
 
         return {
@@ -153,10 +155,10 @@ export class MySqlModel {
             taskId: string,
             name: string | undefined,
             description: string | undefined,
-            status: number | undefined,
-            tasktoDelete: number[],
-            tasktoUpdate: { name: string, id: number }[],
-            tasktoAdd: string[]
+            status: string | undefined,
+            tasktoDelete: { id: string }[],
+            tasktoUpdate: { name: string, id: string }[],
+            tasktoAdd: { name: string }[]
         }) => {
         const { boardId, taskId, name, description, status, tasktoAdd, tasktoDelete, tasktoUpdate } = input
 
@@ -168,34 +170,35 @@ export class MySqlModel {
         }
 
         if (status) {
-            await db.query('UPDATE tasks SET column_id = ? WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?', [status, taskId, boardId])
+            await db.query('UPDATE tasks SET column_id = UUID_TO_BIN(?) WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?', [status, taskId, boardId])
         }
 
         if (tasktoDelete.length > 0) {
-            await db.query(`DELETE FROM subtasks WHERE subtask_id IN (${tasktoDelete.join(',')}) AND BIN_TO_UUID(task) = ?`, [taskId])
+            await db.query(`DELETE FROM subtasks WHERE BIN_TO_UUID(subtask_id) IN ('${tasktoDelete.map(s => s.id).join(',')}') AND BIN_TO_UUID(task) = ?`, [taskId])
         }
 
         if (tasktoUpdate.length > 0) {
-            const whenStatements = tasktoUpdate.map(({ id, name }) => `WHEN ${id} THEN "${name}"`).join(' ')
-            const ids = tasktoUpdate.map(task => task.id).join(',')
-            const query = `UPDATE subtasks SET name = CASE subtask_id ${whenStatements} END WHERE subtask_id IN (${ids}) AND BIN_TO_UUID(task) = ?`
+            const whenStatements = tasktoUpdate.map(({ id, name }) => `WHEN "${id}" THEN "${name}"`).join(' ')
+            const ids = tasktoUpdate.map(task => `'${task.id}'`).join(',')
+            const query = `UPDATE subtasks SET name = CASE BIN_TO_UUID(subtask_id) ${whenStatements} END WHERE BIN_TO_UUID(subtask_id) IN (${ids}) AND BIN_TO_UUID(task) = ?`
             await db.query(query, [taskId])
         }
 
         if (tasktoAdd.length > 0) {
-            const subtasksValues = tasktoAdd.map(name => `(UUID_TO_BIN('${taskId}'),'${name}')`).join(',')
+            const subtasksValues = tasktoAdd.map(s => `(UUID_TO_BIN('${taskId}'),'${s.name}')`).join(',')
             await db.query(`INSERT INTO subtasks (task, name) VALUES ${subtasksValues}`)
         }
 
-        const [[updatedTask]] = await db.query<TaskDB[]>('SELECT BIN_TO_UUID(task_id) AS id, name, description, column_id FROM tasks WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?', [taskId, boardId])
-        const [subtasks] = await db.query<SubtasksDb[]>('SELECT subtask_id AS id, name, isComplete FROM subtasks WHERE BIN_TO_UUID(task) = ?', [taskId])
+        const [[updatedTask]] = await db.query<TaskDB[]>(`SELECT BIN_TO_UUID(task_id) AS id, name, description, BIN_TO_UUID(column_id) AS column_id 
+            FROM tasks WHERE BIN_TO_UUID(task_id) = ? AND BIN_TO_UUID(board_id) = ?`, [taskId, boardId])
+        const [subtasks] = await db.query<SubtasksDb[]>('SELECT BIN_TO_UUID(subtask_id) AS id, name, isComplete FROM subtasks WHERE BIN_TO_UUID(task) = ?', [taskId])
 
         return { ...updatedTask, subtasks: subtasks.map(task => ({ ...task, isComplete: Boolean(task.isComplete), task_id: taskId })) }
     }
 
-    static updateSubtaskStatus = async (input: { taskId: string, subtaskId: number, isCompleted: boolean }) => {
+    static updateSubtaskStatus = async (input: { taskId: string, subtaskId: string, isCompleted: boolean }) => {
         const { taskId, subtaskId, isCompleted } = input
-        await db.query('UPDATE subtasks SET isComplete = ? WHERE subtask_id = ? AND BIN_TO_UUID(task) = ?', [isCompleted, subtaskId, taskId])
+        await db.query('UPDATE subtasks SET isComplete = ? WHERE BIN_TO_UUID(subtask_id) = ? AND BIN_TO_UUID(task) = ?', [isCompleted, subtaskId, taskId])
     }
 
     static deleteTask = async (input: { boardId: string, taskId: string }) => {

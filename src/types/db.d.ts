@@ -33,18 +33,18 @@ export interface BoardName extends RowDataPacket {
 
 export interface ColumnsDB extends RowDataPacket {
     name: string
-    id?: number
+    id?: string
 }
 
 export interface TaskDB extends RowDataPacket {
     id: string
     name: string
     description: string | undefined
-    column_id?: number
+    column_id?: string
 }
 
 export interface SubtasksDb extends RowDataPacket {
-    id: number
+    id: string
     name: string,
     isComplete: 0 | 1,
     task_id?: string
@@ -54,18 +54,18 @@ export interface BoardWithColumnsDB extends RowDataPacket {
     boardId: string,
     name: string,
     createdAt: Date,
-    column_id: number,
+    column_id: string,
     columnName: string
 }
 
 export interface ColumnsWithTasks extends RowDataPacket {
-    columnId: number,
+    columnId: string,
     column_name: string,
     task_id: string | null,
     task_name: string,
     task_description: string | null,
-    task_column_id: number | null,
-    subtask_id: number,
+    task_column_id: string | null,
+    subtask_id: string,
     subtask_name: string,
     subtask_isComplete: 0 | 1 | null
 }
