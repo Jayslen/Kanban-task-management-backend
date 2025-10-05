@@ -174,7 +174,7 @@ export class MySqlModel {
         }
 
         if (tasktoDelete.length > 0) {
-            await db.query(`DELETE FROM subtasks WHERE BIN_TO_UUID(subtask_id) IN ('${tasktoDelete.map(s => s.id).join(',')}') AND BIN_TO_UUID(task) = ?`, [taskId])
+            await db.query(`DELETE FROM subtasks WHERE BIN_TO_UUID(subtask_id) IN (${tasktoDelete.map(s => `'${s.id}'`).join(',')}) AND BIN_TO_UUID(task) = ?`, [taskId])
         }
 
         if (tasktoUpdate.length > 0) {
