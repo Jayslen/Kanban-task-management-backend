@@ -5,7 +5,7 @@ import { ROUND_SALT } from "../config.js";
 import { ACCESS_TOKEN_EXP, REFRESH_TOKEN_EXP } from "../config.js";
 import { parseUser } from "../utils/parseCredentials.js";
 import { createJWT } from "../utils/JWT.js";
-import { throwResponseError, ValidationError } from "../schema/Errors.js";
+import { throwResponseError, UnauthorizedUser, ValidationError } from "../schema/Errors.js";
 import { validateBoardColumnsSchema, validateBoardSchema, validateBoardTaskUpdateSchema, validateSubtaskStatusSchema, validateTaskBoard } from "../schema/boardSchema.js";
 import { formatZodError } from "../utils/zodError.js";
 import { parseColumns } from '../utils/columnsParser.js'
@@ -52,6 +52,20 @@ export class Controller {
         } catch (Error) {
             throwResponseError({ error: Error as Error, res })
         }
+    }
+
+    logout = async (req: Request, res: Response) => {
+        const user = req.user
+        try {
+            if (!user) throw new UnauthorizedUser("User not authentificated")
+            res.clearCookie('access_token')
+            res.clearCookie('refresh_token')
+            await this.BoardModel.logout(user?.sessionId || '')
+            res.sendStatus(200)
+        } catch (error) {
+            throwResponseError({ error: error as Error, res })
+        }
+
     }
 
     newBoard = async (req: Request, res: Response) => {
@@ -173,7 +187,6 @@ export class Controller {
 
     getBoards = async (req: Request, res: Response) => {
         const { userId } = (req.user) as { userId: string }
-
         try {
             const boards = await this.BoardModel.getBoards(userId)
             res.status(200).json(boards)

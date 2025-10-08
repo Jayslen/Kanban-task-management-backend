@@ -59,9 +59,15 @@ export class MySqlModel {
             [sessionUUID, userFound.user_id]
         )
 
+        await db.query('DELETE FROM sessions WHERE user_id = UUID_TO_BIN(?) AND session_id != UUID_TO_BIN(?)', [userFound.user_id, sessionUUID])
+
         if (results.affectedRows !== 1) throw new Error('Error with server')
 
         return { userId: userFound.user_id, sessionId: sessionUUID, username: userFound.username }
+    }
+
+    static logout = async (sessionId: string) => {
+        await db.query('DELETE FROM sessions WHERE BIN_TO_UUID(session_id) = ?', [sessionId])
     }
 
     static newBoard = async (input: { board: BoardBasicInfoDTO, userId: string }) => {

@@ -8,7 +8,6 @@ export async function createBoardRouter(Model: SQLModel): Promise<Router> {
     const router = Router()
     const Controller = new BoardController(Model)
     router.use(Authorization)
-
     router.post('/', Controller.newBoard)
     router.patch('/:boardId', boardAuthorization, Controller.updateBoard)
     router.delete('/:boardId', boardAuthorization, Controller.deleteBoard)

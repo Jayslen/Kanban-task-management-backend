@@ -3,7 +3,7 @@ import { TOKEN_SECRET_KEY } from '../config.js'
 import { Payload, VerifyResult } from '@CustomTypes/auth'
 
 export function createJWT(input: { data: object, expiresIn: any }) {
-    const { data, expiresIn = "1m" } = input
+    const { data, expiresIn } = input
 
     return jwt.sign(data, TOKEN_SECRET_KEY, { expiresIn: expiresIn })
 }
