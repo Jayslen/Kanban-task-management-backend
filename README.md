@@ -223,14 +223,19 @@ Register a new user with a unique username and password.
   "username": "john_doe",
   "password": "securePassword123"
 }
-
 ```
-
 #### ✅ Success Response
 
-- **Code:** `201 Created`
-
-No body returned.
+- **Code:** `201 created`
+- **Set-Cookie Headers:**
+    - `access_token=<JWT>`
+    - `refresh_token=<JWT>`
+- **Body:**
+    ```json
+    {
+        "username": "admin"
+    }
+    ```
 
 #### ❌ Error Responses
 
@@ -260,8 +265,12 @@ Log in with username and password to receive JWT tokens in HttpOnly cookies.
 - **Set-Cookie Headers:**
     - `access_token=<JWT>`
     - `refresh_token=<JWT>`
-
-No body returned.
+- **Body:**
+    ```json
+    {
+        "username": "admin"
+    }
+    ```
 
 #### ❌ Error Responses
 
