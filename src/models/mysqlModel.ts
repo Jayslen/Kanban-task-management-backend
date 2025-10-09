@@ -31,6 +31,23 @@ export class MySqlModel {
             'INSERT INTO users (user_id, username, password) VALUES (UUID_TO_BIN(?),?,?)',
             [uuid, username, password]
         )
+
+        const [[userFound]] = await db.query<UserCredentials[]>(
+            `SELECT 
+                username, password, BIN_TO_UUID(user_id) AS user_id 
+            FROM users WHERE LOWER(username) = LOWER(?)`,
+            [username]
+        )
+        const [[{ uuid: sessionUUID }]] = await db.query<UUID[]>('SELECT uuid() AS uuid')
+        const [results] = await db.query<ResultSetHeader>(
+            `INSERT INTO sessions (session_id,user_id)
+            VALUES (UUID_TO_BIN(?), UUID_TO_BIN(?))`,
+            [sessionUUID, userFound.user_id]
+        )
+
+        if (results.affectedRows !== 1) throw new Error('Error with server')
+        return { userId: userFound.user_id, sessionId: sessionUUID, username: userFound.username }
+
     }
 
     static login = async (input: UserParams) => {

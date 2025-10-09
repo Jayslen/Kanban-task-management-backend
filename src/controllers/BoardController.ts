@@ -23,8 +23,18 @@ export class Controller {
             const { username, password } = userdata
 
             const hashPassword = await bycrypt.hash(password, +ROUND_SALT)
-            await this.BoardModel.resister({ password: hashPassword, username })
-            res.sendStatus(201)
+            const data = await this.BoardModel.resister({ password: hashPassword, username })
+            const ACCESS_TOKEN = createJWT({ data, expiresIn: ACCESS_TOKEN_EXP })
+            const REFRESH_TOKEN = createJWT({ data, expiresIn: REFRESH_TOKEN_EXP })
+
+            res.cookie('access_token', ACCESS_TOKEN, {
+                httpOnly: true
+            })
+            res.cookie('refresh_token', REFRESH_TOKEN, {
+                httpOnly: true
+            })
+
+            res.status(201).json({ username })
         } catch (Error) {
             throwResponseError({ error: Error as Error, res })
         }
